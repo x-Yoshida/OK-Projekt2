@@ -1,0 +1,7 @@
+#Ignore those
+*.exe
+*.bin
+*.code-workspace
+.vscode/
+Orlib/*.txt
+Taillard/*.txt
