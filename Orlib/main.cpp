@@ -267,6 +267,73 @@ Solution greedyMax(TestData data,Solution sol)
     return sol;
 }
 
+Solution genRandom(TestData data,Solution sol)
+{
+    while (!data.jIndex.empty())
+    {
+        int shortestTask = INT32_MAX;
+        std::vector<int> neededMachines;
+        for(int j : data.jIndex)
+        {
+            if(!isInVector(neededMachines,data.jobs[j].tasks[0].mNumber))
+            {
+                neededMachines.push_back(data.jobs[j].tasks[0].mNumber);
+            }
+        }
+
+        for(int i : neededMachines)
+        {
+            if(data.machines[i].timeLeft!=0)
+            {
+                if(shortestTask>data.machines[i].timeLeft)
+                {
+                    shortestTask=data.machines[i].timeLeft;
+                }
+                continue;
+            }
+            
+            int maxTimeForMachine=-1;
+            int jobId;
+            for(int j : data.jIndex)
+            {
+                if(!(data.jobs[j].tasks[0].mNumber==i))
+                {
+                    continue;
+                }
+                if(maxTimeForMachine<data.jobs[j].tasks[0].pTime)
+                {
+                    maxTimeForMachine=data.jobs[j].tasks[0].pTime;
+                    jobId=j;
+                }
+            }
+            data.machines[i].timeLeft=maxTimeForMachine;
+            data.machines[i].workingOnJob=jobId;
+            sol.res[data.machines[i].workingOnJob].push_back(sol.timeElapsed);
+            if(shortestTask>maxTimeForMachine)
+            {
+                shortestTask=maxTimeForMachine;
+            }
+
+        }
+        for(int i : neededMachines)
+        {
+            data.machines[i].timeLeft-=shortestTask;
+            if(data.machines[i].timeLeft==0)
+            {
+                data.jobs[data.machines[i].workingOnJob].tasks.erase(data.jobs[data.machines[i].workingOnJob].tasks.begin());
+                if(data.jobs[data.machines[i].workingOnJob].tasks.empty())
+                {
+                    data.jIndex.erase(std::find(data.jIndex.begin(),data.jIndex.end(),data.machines[i].workingOnJob));
+                }
+            }
+        }
+        sol.timeElapsed+=shortestTask;
+    }
+    return sol;
+}
+
+
+
 #pragma endregion
 
 int main(int argc, char** argv)
