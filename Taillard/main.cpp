@@ -28,8 +28,8 @@ struct Machine
 
 struct Solution
 {
-    int timeElapsed=0;
-    std::vector<std::vector<int>> res;
+    long timeElapsed=0;
+    std::vector<std::vector<long>> res;
     
     bool operator> (Solution &s)
     {
@@ -75,11 +75,6 @@ std::ostream& operator<< (std::ostream& stream,Job& j)
 
 #pragma region functions
 
-void printHelp()
-{
-    std::cout << "Help" << std::endl;
-}
-
 bool isInVector(std::vector<int> v, int num)
 {
     for(int i : v)
@@ -111,7 +106,7 @@ void readFile(std::string filePath,TestData &data,Solution &sol)
             tmpJob.tasks.push_back(tmpTask);
         }
         data.jobs.push_back(tmpJob);
-        sol.res.push_back(std::vector<int>{});
+        sol.res.push_back(std::vector<long>{});
         data.jIndex.push_back(i);
     }
     in.ignore(1024,'\n');
@@ -289,21 +284,8 @@ int main(int argc, char** argv)
 {
     std::string filePath = "test.txt";
     std::string outFilePath = "res.txt";
-    // if(argc==1)
-    // {
-    //     printHelp();
-    //     return 0;
-    // }
     if(argc==2)
     {
-        if(argv[1][0]=='-')
-        {
-            if(argv[1][1]=='h')
-            {
-                printHelp();
-                return 0;
-            }
-        }
         filePath = argv[1];
     }
     if(argc==3)

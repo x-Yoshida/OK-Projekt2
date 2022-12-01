@@ -4,4 +4,5 @@
 *.code-workspace
 .vscode/
 Orlib/*.txt
+Orlib/testdata/**
 Taillard/*.txt
