@@ -143,14 +143,72 @@ void solutionToFile(std::string filePath,TestData &data, Solution &sol)
     out.close();
 }
 
+void randomizeSolution(Solution &sol,int &randomizationSeed)
+{
+    std::shuffle(sol.priorityQueue.begin(),sol.priorityQueue.end(),std::default_random_engine(randomizationSeed));
+}
+
 Solution genSolution(TestData data,Solution sol)
 {
     std::vector<int> priorityQueue = sol.priorityQueue;
     while(!priorityQueue.empty())
     {
         int shortestTask = INT32_MAX;
-
+        std::vector<int> neededMachines;
+        for(Job j : data.jobs)
+        {
+            if(j.currentTask==data.numOfMachines)
+            {
+                continue;
+            }
+            if(!isInVector(neededMachines,j.tasks[j.currentTask].mNumber))
+            {
+                neededMachines.push_back(j.tasks[j.currentTask].mNumber);
+            }
+        }
+        for(int m : neededMachines)
+        {
+            if(data.machines[m].timeLeft!=0)
+            {
+                if(shortestTask>data.machines[m].timeLeft)
+                {
+                    shortestTask=data.machines[m].timeLeft;
+                }
+                continue;
+            }
+            for(int j : priorityQueue)
+            {
+                if(!(data.jobs[j].tasks[data.jobs[j].currentTask].mNumber==m))
+                {
+                    continue;
+                }
+                if(shortestTask>data.jobs[j].tasks[data.jobs[j].currentTask].pTime)
+                {
+                    shortestTask=data.jobs[j].tasks[data.jobs[j].currentTask].pTime;
+                }
+                data.machines[m].timeLeft=data.jobs[j].tasks[data.jobs[j].currentTask].pTime;
+                data.machines[m].workingOnJob=j;
+                sol.res[j].push_back(sol.timeElapsed);
+                break;
+            }
+        }
+        for(int m : neededMachines)
+        {
+            data.machines[m].timeLeft-=shortestTask;
+            if(data.machines[m].timeLeft==0)
+            {
+                data.jobs[data.machines[m].workingOnJob].currentTask++;
+                if(data.jobs[data.machines[m].workingOnJob].currentTask==data.numOfMachines)
+                {
+                    priorityQueue.erase(std::find(priorityQueue.begin(),priorityQueue.end(),data.machines[m].workingOnJob));
+                }
+            }
+        }
+        neededMachines.clear();
+        sol.timeElapsed+=shortestTask;
     }
+
+    return sol;
 }
 
 Solution greedyMin(TestData data,Solution sol)
@@ -293,21 +351,28 @@ int main(int argc, char** argv)
     {
         filePath = argv[1];
     }
-    if(argc==3)
+    else if(argc==3)
     {
+        //if(argv[0])
         filePath = argv[1];
         outFilePath = argv[2];
     }
 
+    int seed=3;
     TestData data;
     Solution emptySol;
     Solution solMin;
     Solution solMax;
+    Solution solTest;
     
-/*
+    
+
     readFile(filePath,data,emptySol);
-
-
+    solTest = emptySol;
+    randomizeSolution(solTest,seed);
+    solTest = genSolution(data,solTest);
+    solutionToFile(outFilePath,data,solTest);
+/*
     solMin = greedyMin(data,emptySol);
     solMax = greedyMax(data,emptySol);
     std::default_random_engine(1);
@@ -320,24 +385,6 @@ int main(int argc, char** argv)
         solutionToFile(outFilePath,data,solMin);
     }
 */
-/*
-    std::vector<int> numbs;
-    for(int i=0;i<5;i++)
-    {
-        numbs.push_back(i+1);
-    }
-    std::shuffle(numbs.begin(),numbs.end(),std::default_random_engine(2));
-    for(int i=0;i<5;i++)
-    {
-        std::cout << numbs[i] << " ";
-    }
-    std::cout << std::endl;
-    std::shuffle(numbs.begin(),numbs.end(),std::default_random_engine(2));
-    for(int i=0;i<5;i++)
-    {
-        std::cout << numbs[i] << " ";
-    }
-    std::cout << std::endl;
-*/
+
     return 0;
 }
