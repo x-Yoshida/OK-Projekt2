@@ -7,9 +7,9 @@
 
 enum flags
 {
-    TIME=0,
-    GENERATION=1,
-    SHOWCONSOLEOUTPUT=2
+    TIME=1,
+    GENERATION=2,
+    SHOWCONSOLEOUTPUT=4
 };
 
 ///pragma region nie robi w sumie nic poza poza pozwoleniem na zwinięcie tekstu w edytorze [source do informacji https://learn.microsoft.com/pl-pl/cpp/preprocessor/region-endregion?view=msvc-170 ]
@@ -238,6 +238,9 @@ Solution genSolution(TestData data,Solution sol)
     return sol;
 }
 
+/*
+
+*/
 void initializePopulation(Solution &empty,TestData &data,std::vector<Solution> &solutions,int &populationSize, int &seed)
 {
     
@@ -298,10 +301,14 @@ Solution crossover(Solution &s1,Solution &s2,Solution result,int preferred)
     return result;
 }
 
+/*
+Wykonuje losową ilość mutacji (Mutacje polegające na zamianie ze sobą dwóch liczb w kolejce priorytetowej)
+[W zakresie od 1 do maxMutations]
+*/
 void mutate(Solution &s,int maxMutations)
 {
-    std::random_device rd;
-    std::uniform_int_distribution<int> dist(0,s.priorityQueue.size()-1);
+    std::random_device rd; //Generator liczb losowych z biblioteki random 
+    std::uniform_int_distribution<int> dist(0,s.priorityQueue.size()-1); //Rozkład liczb całkowitych w zakresie od 0 do wielkości kolejki priorytetu - 1 (Bo indeksujemy od 0) potrzebny do losowania które elementy w kolejce zostaną zamienione
     std::uniform_int_distribution<int> mutationDist(1,maxMutations);
     int mutationCount = mutationDist(rd);
     for(int i=0;i<mutationCount;i++)
@@ -336,6 +343,7 @@ void generateNextPopulation(Solution &empty,TestData &data,std::vector<Solution>
     {
         solutions.push_back(bestSolutions[i]);
     }
+    /*
     for(int i=1;i<bestSolutionsCount;i++)
     {
         Solution tmp = crossover(bestSolutions[dist(rd)],bestSolutions[dist(rd)],empty,percentage(rd));
@@ -346,6 +354,7 @@ void generateNextPopulation(Solution &empty,TestData &data,std::vector<Solution>
         solutions.push_back(genSolution(data,tmp));
     }
     solutionToGenerate=solutionToGenerate-bestSolutionsCount+1;
+    */
     for(int i=solutionToGenerate;i>0;i--)
     {
         Solution tmp = crossover(bestSolutions[dist(rd)],bestSolutions[dist(rd)],empty,percentage(rd));
@@ -374,6 +383,14 @@ void printGeneration(std::vector<Solution> &solutions,int n,int generation)
     }
 }
 
+/*
+Funkcja do zajmowania sie flagami programu [i argumentami ogólnie]
+"-T ile" ~Czas Trwania Programu (W minutach)
+"-G ile" ~Ile generacji ma przejść algorytm genetyczny
+"-P ile" ~Jak duża ma być populacja
+"-C" ~Wypisywanie w konsoli najlpeszych rozwiązań w każdej generacji
+"-B ile" ~Wybranie jak dużo najlepszych rozwiązań ma zostać wypisanych w każdej generacji
+*/
 void flagHendeling(int &flag,std::string &filePath,std::string &outFilePath,int &stopAt,int &populationSize,int &showTop,int argc,char** argv)
 {
     filePath = argv[1];
@@ -399,13 +416,15 @@ void flagHendeling(int &flag,std::string &filePath,std::string &outFilePath,int 
         {
             case 'G':
             {
-                flag = flag | flags::GENERATION;
+                flag = flag & 0b1110;
+                flag = flag | flags::GENERATION; //Pojedyńcza "|" to binary or czyli porówny zmienimy konkretny bit we fladze na 1
                 stopAt = atoi(argv[i+1]);
                 i+=2;
                 break;
             }
             case 'T':
             {
+                flag = flag & 0b1101;
                 flag = flag | flags::TIME;
                 stopAt = atoi(argv[i+1]);
                 i+=2;
@@ -440,7 +459,7 @@ void flagHendeling(int &flag,std::string &filePath,std::string &outFilePath,int 
 
 int main(int argc, char** argv)
 {
-    int stopAt=5;
+    int stopAt=3;
     int flag = flags::TIME;// | flags::SHOWCONSOLEOUTPUT;
     std::string filePath = "test.txt";
     std::string outFilePath = filePath.substr(0,filePath.find('.',0))+"res.txt";
