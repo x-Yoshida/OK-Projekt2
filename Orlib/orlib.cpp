@@ -343,18 +343,6 @@ void generateNextPopulation(Solution &empty,TestData &data,std::vector<Solution>
     {
         solutions.push_back(bestSolutions[i]);
     }
-    /*
-    for(int i=1;i<bestSolutionsCount;i++)
-    {
-        Solution tmp = crossover(bestSolutions[dist(rd)],bestSolutions[dist(rd)],empty,percentage(rd));
-        if(percentage(rd)<60)
-        {
-            mutate(tmp,5);
-        }
-        solutions.push_back(genSolution(data,tmp));
-    }
-    solutionToGenerate=solutionToGenerate-bestSolutionsCount+1;
-    */
     for(int i=solutionToGenerate;i>0;i--)
     {
         Solution tmp = crossover(bestSolutions[dist(rd)],bestSolutions[dist(rd)],empty,percentage(rd));
